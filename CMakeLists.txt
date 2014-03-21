@@ -13,8 +13,14 @@ set(ARCH "32")
 set(CMAKE_C_FLAGS "-Wall -pedantic -funsigned-char -O${OPT_LVL} -std=${LANG_STD} -m${ARCH}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-add_library(gmp STATIC IMPORTED)
-set_property(TARGET gmp PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libgmp.a)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(GMP_NAME "gmp-linux32")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(GMP_NAME "gmp-win32")
+endif()
+
+add_library(${GMP_NAME} STATIC IMPORTED)
+set_property(TARGET ${GMP_NAME} PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/lib${GMP_NAME}.a)
 
 add_executable(${TARGET} ${SOURCES})
-target_link_libraries(${TARGET} gmp)
+target_link_libraries(${TARGET} ${GMP_NAME})
