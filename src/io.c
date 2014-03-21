@@ -49,7 +49,7 @@ ee_file_open(ee_file_t *file, const ee_char_t *name, ee_int_t mode)
         goto build_smode_error;
     }
     
-    if ((EE_MODE_READ == mode) && (0 != access(name, F_OK))) {
+    if ((EE_MODE_READ == mode) && (EE_FALSE == ee_is_file_exists(name))) {
         status = EE_FILE_NOT_EXISTS;
         goto file_not_exists_error;
     }

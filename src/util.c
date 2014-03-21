@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "util.h"
 
 #include "common.h"
@@ -10,4 +12,19 @@ ee_memset(void *mem, ee_int_t val, ee_size_t count)
     for (ee_size_t i = 0; i < count; ++i) {
         bmem[i] = val;
     }
+}
+
+ee_bool_t
+ee_is_file_exists(const ee_char_t *name)
+{
+	FILE *file = NULL;
+	
+	file = fopen(name, "r");
+	if (NULL == file) {
+		return EE_FALSE;
+	}
+	
+	fclose(file);
+	
+	return EE_TRUE;
 }

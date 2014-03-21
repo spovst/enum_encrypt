@@ -87,7 +87,7 @@ ee_deltas_get(ee_deltas_t *deltas)
     ee_int_t status = EE_SUCCESS;
     
     snprintf(dfname, EE_MAX_FN_LEN, "%u%s", deltas->sigma, DELTA_FN_SUFFIX);
-    if (0 != access(dfname, F_OK)) {
+	if (EE_FALSE == ee_is_file_exists(dfname)) {
         dfile = fopen(dfname, "wb");
         if (NULL == dfile) {
             status = EE_FILE_OPEN_FAILURE;
