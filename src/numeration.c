@@ -130,7 +130,7 @@ ee_subnumber_eval(ee_subnumber_t *subnumber, ee_number_t *number)
         }
     }
     
-    subnumber->subnum_bit_length = bit_idx + 1;
+    subnumber->subnum_bit_length = bit_idx;
     
     mpz_clear(diff);
 }
@@ -175,8 +175,6 @@ ee_eval_subnum_bit_length(ee_size_t *subnum_bit_length, mpz_t delta,
             *subnum_bit_length -= 1;
         } while (0 == mpz_tstbit(delta, *subnum_bit_length));
     }
-    
-    *subnum_bit_length += 1;
 }
 
 void
