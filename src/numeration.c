@@ -121,7 +121,7 @@ ee_subnumber_eval(ee_subnumber_t *subnumber, ee_number_t *number)
         if (0 != mpz_tstbit(number->delta, bit_idx)) {
             mpz_set_ui(diff, 1);
             mpz_mul_2exp(diff, diff, bit_idx);
-            if (mpz_cmp(subnumber->subnum, diff) > 0) {
+            if (mpz_cmp(subnumber->subnum, diff) >= 0) {
                 mpz_sub(subnumber->subnum, subnumber->subnum, diff);
                 subnumber->subset += 1;
             } else {
