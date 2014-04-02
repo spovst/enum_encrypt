@@ -9,6 +9,7 @@
 void
 ee_statistics_gather(ee_statistics_t *statistics, ee_block_t *block)
 {
+    ee_memset(statistics->stats, 0, sizeof(statistics->stats));
     statistics->padding = block->size - block->length;
     ee_memset(statistics->stats, 0, sizeof(statistics->stats));
     for (ee_size_t i = 0; i < block->size; ++i) {
