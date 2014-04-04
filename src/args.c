@@ -61,7 +61,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     ee_bool_t output_specified = EE_FALSE;
     
     args->mode = EE_MODE_ENCRYPT;
-    args->sigma = 10;
+    args->sigma = 8;
     args->key = NULL;
     args->input_file = NULL;
     args->output_file = "a.out";
@@ -98,8 +98,8 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 goto end;
             }
             
-            if (8 > args->sigma || 16 < args->sigma) {
-                fprintf(stderr, "%s: '--sigma' must be in range [8; 16]\n",
+            if (1 > args->sigma || 16 < args->sigma) {
+                fprintf(stderr, "%s: '--sigma' must be in range [1; 16]\n",
                         argv[0]);
                 EE_SEE_HELP(argv[0]);
                 status = EE_FAILURE;
@@ -144,7 +144,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     }
     
     if (EE_FALSE == sigma_specified) {
-        EE_USED_DEFAULT_VALUE(argv[0], "'--sigma'", "10");
+        EE_USED_DEFAULT_VALUE(argv[0], "'--sigma'", "8");
     }
     
     if (EE_FALSE == output_specified) {
@@ -167,7 +167,7 @@ ee_print_help_msg_s(void)
            "\t                             \tto output file; also allowed the reduction;\n"
            "\t                             \t'encrypt' by default\n");
     printf("\t-s, --sigma=[VALUE]          \tspecifies the block size is calculated as 2^VALUE;\n"
-           "\t                             \tthe valid values in range [8; 16]; '10' by default\n");
+           "\t                             \tthe valid values in range [1; 16]; '8' by default\n");
     printf("\t-o, --output=[FILE]          \tspecifies the output file to which to write the result\n"
            "\t                             \tof the encryption or decryption (depending on the --mode);\n"
            "\t                             \t'a.out' by default\n");

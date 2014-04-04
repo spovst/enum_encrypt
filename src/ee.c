@@ -60,14 +60,14 @@ main(int argc, char *argv[])
     
     switch (args.mode) {
     case EE_MODE_ENCRYPT:
-        status = ee_encypt(&output, &input, args.key, args.sigma);
+        status = ee_encrypt(&output, &input, args.key, args.sigma);
         if (EE_SUCCESS != status) {
             ee_print_error(status);
         }
         
         break;
     case EE_MODE_DECRYPT:
-        status = ee_decypt(&output, &input, args.key, args.sigma);
+        status = ee_decrypt(&output, &input, args.key, args.sigma);
         if (EE_SUCCESS != status) {
             ee_print_error(status);
         }
@@ -112,7 +112,7 @@ ee_print_error(ee_int_t code)
                 "allowed)\n");
         break;
     default:
-        fprintf(stderr, "unknown error code\n");
+        fprintf(stderr, "unknown error code: %lu\n", code);
         break;
     }
 }

@@ -1,12 +1,9 @@
-#include <stdio.h>
-
 #include <gmp.h>
 
 #include "crypt.h"
 
 #include "common.h"
 #include "io.h"
-#include "delta.h"
 #include "statistics.h"
 #include "block.h"
 #include "numeration.h"
@@ -30,16 +27,14 @@
         }
 
 ee_int_t
-ee_encypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
+ee_encrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
         ee_size_t sigma)
 {
     ee_int_t status;
     ee_int_t block_status;
-    
-    ee_deltas_t deltas;
-    ee_statistics_t statistics;
-    
+        
     ee_block_t block;
+    ee_statistics_t statistics;
     ee_number_t number;
     ee_subnumber_t subnumber;
     ee_key_t key;
@@ -48,10 +43,6 @@ ee_encypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
     ee_sdata_t subnum_data = { .bytes = NULL, .bits_number = 0 };
     ee_sdata_t subset_data = { .bytes = NULL, .bits_number = 0 };
     
-    status = ee_deltas_init(&deltas, sigma);
-    EE_GOTO_IF_NOT_SUCCESS(status, deltas_init_error);
-    status = ee_deltas_get(&deltas);
-    EE_GOTO_IF_NOT_SUCCESS(status, deltas_get_error);
     status = ee_block_init(&block, sigma);
     EE_GOTO_IF_NOT_SUCCESS(status, block_init_error);
     status = ee_key_init(&key, key_data);
@@ -66,7 +57,7 @@ ee_encypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
         block_status = status;
         status = EE_SUCCESS;
         ee_statistics_gather(&statistics, &block);
-        status = ee_number_eval(&number, &block, &statistics, &deltas);
+        status = ee_number_eval(&number, &block, &statistics);
         EE_BREAK_IF_NOT_SUCCESS(status);
         ee_subnumber_eval(&subnumber, &number);
         status = ee_mpz_serialize(&subnum_data, subnumber.subnum,
@@ -99,22 +90,17 @@ ee_encypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
 key_init_error:
     ee_block_deinit(&block);
 block_init_error:
-deltas_get_error:    
-    ee_deltas_deinit(&deltas);
-deltas_init_error:
     return status;
 }
 
 ee_int_t
-ee_decypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
+ee_decrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
         ee_size_t sigma)
 {
     ee_int_t status;
-    
-    ee_deltas_t deltas;
-    ee_statistics_t statistics;
-    
+        
     ee_block_t block;
+    ee_statistics_t statistics;
     ee_number_t number;
     ee_subnumber_t subnumber;
     ee_key_t key;
@@ -126,10 +112,6 @@ ee_decypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
     mpz_t rho;
     mpz_t delta;
     
-    status = ee_deltas_init(&deltas, sigma);
-    EE_GOTO_IF_NOT_SUCCESS(status, deltas_init_error);
-    status = ee_deltas_get(&deltas);
-    EE_GOTO_IF_NOT_SUCCESS(status, deltas_get_error);
     status = ee_block_init(&block, sigma);
     EE_GOTO_IF_NOT_SUCCESS(status, block_init_error);
     status = ee_key_init(&key, key_data);
@@ -156,7 +138,8 @@ ee_decypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
         ee_block_generate(&block, &statistics);
         status = ee_eval_rho(rho, &block, &statistics);
         EE_BREAK_IF_NOT_SUCCESS(status);
-        mpz_cdiv_q(delta, deltas.deltas[deltas.sigma][0], rho);
+        status = ee_eval_delta(delta, rho, &block, &statistics);
+        EE_BREAK_IF_NOT_SUCCESS(status);
         ee_eval_subnum_bit_length(&(subnumber.subnum_bit_length), delta,
                 subnumber.subset);
         status = ee_file_read_sdata(&subnum_data, subnumber.subnum_bit_length,
@@ -166,7 +149,7 @@ ee_decypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
         ee_mpz_deserialize(subnumber.subnum, subnumber.subnum_bit_length,
                 &subnum_data);
         ee_number_restore(&number, delta, &subnumber);
-        status = ee_block_restore(&block, &statistics, rho, &deltas, &number);
+        status = ee_block_restore(&block, &statistics, rho, &number);
         EE_BREAK_IF_NOT_SUCCESS(status);
         status = ee_file_write_block(outfile, &block);
         EE_BREAK_IF_NOT_SUCCESS(status);
@@ -189,8 +172,5 @@ ee_decypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
 key_init_error:
     ee_block_deinit(&block);
 block_init_error:
-deltas_get_error:    
-    ee_deltas_deinit(&deltas);
-deltas_init_error:
     return status;
 }

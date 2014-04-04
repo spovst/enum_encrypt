@@ -12,7 +12,5 @@ typedef struct ee_statistics_s {
 
 void
 ee_statistics_gather(ee_statistics_t *statistics, ee_block_t *block);
-void
-ee_statistics_eval_padding(ee_statistics_t *statistics, ee_size_t sigma);
 
 #endif /* STATISTICS_H */

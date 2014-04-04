@@ -37,7 +37,6 @@ ee_statistics_serialize(ee_sdata_t *data, ee_statistics_t *statistics,
         goto calloc_error;
     }
     
-    statistics->stats[0] -= statistics->padding;
     for (ee_size_t i = 0; i < EE_ALPHABET_SIZE; ++i) {
         for (ee_size_t j = item_size; j > 0; --j) {
             ee_size_t bit = ee_bit_get(statistics->stats[i], j - 1);
@@ -47,8 +46,6 @@ ee_statistics_serialize(ee_sdata_t *data, ee_statistics_t *statistics,
             ee_bit_info_ms_inc(&bit_info);
         }
     }
-    
-    statistics->stats[0] += statistics->padding;
     
 calloc_error:
     return status;
@@ -70,9 +67,6 @@ ee_statistics_deserialize(ee_statistics_t *statistics, ee_sdata_t *data,
             ee_bit_info_ms_inc(&bit_info);
         }
     }
-    
-    ee_statistics_eval_padding(statistics, sigma);
-    statistics->stats[0] += statistics->padding;
 }
 
 ee_int_t
