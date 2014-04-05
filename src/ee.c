@@ -60,14 +60,14 @@ main(int argc, char *argv[])
     
     switch (args.mode) {
     case EE_MODE_ENCRYPT:
-        status = ee_encrypt(&output, &input, args.key, args.sigma);
+        status = ee_encrypt(&output, &input, args.key, args.sigma, args.mu);
         if (EE_SUCCESS != status) {
             ee_print_error(status);
         }
         
         break;
     case EE_MODE_DECRYPT:
-        status = ee_decrypt(&output, &input, args.key, args.sigma);
+        status = ee_decrypt(&output, &input, args.key, args.sigma, args.mu);
         if (EE_SUCCESS != status) {
             ee_print_error(status);
         }

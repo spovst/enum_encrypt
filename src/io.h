@@ -56,4 +56,9 @@ ee_file_read_block(ee_block_t *block, ee_file_t *file);
 ee_int_t
 ee_file_write_block(ee_file_t *file, ee_block_t *block);
 
+ee_int_t
+ee_file_read_message(ee_message_t *message, ee_file_t *file);
+ee_int_t
+ee_file_write_message(ee_file_t *file, ee_message_t *message);
+
 #endif	/* IO_H */

@@ -60,7 +60,7 @@ ee_file_open(ee_file_t *file, const ee_char_t *name, ee_int_t mode)
         goto file_open_error;
     }
     
-    file->buffer = calloc(EE_IO_BUFFER_SIZE, sizeof(ee_byte_t));
+    file->buffer = calloc(EE_IO_BUFFER_SIZE, sizeof(*(file->buffer)));
     if (NULL == file->buffer) {
         status = EE_ALLOC_FAILURE;
         goto calloc_error;
@@ -278,7 +278,7 @@ ee_file_read_sdata(ee_sdata_t *sdata, ee_size_t bits_number, ee_file_t *file)
     ee_size_t bytes_number = EE_EVAL_BYTES_NUMBER(bits_number);
     
     sdata->bits_number = bits_number;
-    sdata->bytes = calloc(bytes_number, sizeof(ee_byte_t));
+    sdata->bytes = calloc(bytes_number, sizeof(*(sdata->bytes)));
     if (NULL == sdata->bytes) {
         status = EE_ALLOC_FAILURE;
     } else {
@@ -318,6 +318,46 @@ ee_file_write_block(ee_file_t *file, ee_block_t *block)
     }
     
     return status;
+}
+
+ee_int_t
+ee_file_read_message(ee_message_t *message, ee_file_t *file)
+{
+    ee_int_t status = EE_SUCCESS;
+    ee_size_t capacity = 0;
+    ee_char_t *p = NULL;
+    
+    message->chars = NULL;
+    message->length = 0;
+    
+    do {
+        p = realloc(message->chars, capacity + EE_IO_BUFFER_SIZE);
+        if (NULL == p) {
+            return EE_ALLOC_FAILURE;
+        }
+        
+        message->chars = p;
+        p = message->chars + capacity;
+        capacity += EE_IO_BUFFER_SIZE;
+        
+        ee_size_t rc = ee_file_read(p, EE_IO_BUFFER_SIZE, file);
+        message->length += rc;
+        if (EE_IO_BUFFER_SIZE != rc) {
+            if (EE_END_OF_FILE != file->status) {
+                status = file->status;
+                break;
+            }
+        }
+    } while (EE_END_OF_FILE != file->status);
+    
+    return status;
+}
+
+ee_int_t
+ee_file_write_message(ee_file_t *file, ee_message_t *message)
+{
+    ee_file_write(file, message->chars, message->length);
+    return file->status;
 }
 
 static const ee_char_t *

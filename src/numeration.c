@@ -254,7 +254,7 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
     ee_int_t *thetas = NULL;
     ee_int_t *indexes = NULL;
     ee_z_item_t **z = NULL;
-    ee_rt_item_t **rtd = NULL;
+    ee_rt_item_t **rt = NULL;
     mpz_t **delta;
     ee_size_t zrows = block->sigma + 1;
     
@@ -283,14 +283,14 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
         }
     }
     
-    rtd = calloc(block->sigma, sizeof(*z));
+    rt = calloc(block->sigma, sizeof(*z));
     if (NULL == z) {
         status = EE_ALLOC_FAILURE;
         goto rt_calloc_error;
     }
     for (ee_size_t i = 0; i < block->sigma; ++i) {
-        rtd[i] = calloc((block->size >> i) - 1, sizeof(**rtd));
-        if (NULL == rtd[i]) {
+        rt[i] = calloc((block->size >> i) - 1, sizeof(**rt));
+        if (NULL == rt[i]) {
             status = EE_ALLOC_FAILURE;
             goto rt_i_calloc_error;
         }
@@ -306,8 +306,8 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
     for (ee_size_t i = 0; i < block->sigma; ++i) {
         ee_size_t cols = (block->size >> i) - 1;
         for (ee_size_t j = 0; j < cols; ++j) {
-            mpz_init(rtd[i][j].rho);
-            mpz_init(rtd[i][j].theta);
+            mpz_init(rt[i][j].rho);
+            mpz_init(rt[i][j].theta);
         }
     }
     
@@ -365,17 +365,17 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
     
     for (ee_size_t i = 0; i < block->length; ++i) {
         if (EE_FALSE == z[0][i].init) {
-            ee_eval_z_s(z, indexes, i, block, rtd, delta);
+            ee_eval_z_s(z, indexes, i, block, rt, delta);
         }
         
-        ee_block_restore_symbol_s(block, i, rtd, delta, thetas, z);
+        ee_block_restore_symbol_s(block, i, rt, delta, thetas, z);
     }
     
     for (ee_size_t i = 0; i < block->sigma; ++i) {
         ee_size_t cols = (block->size >> i) - 1;
         for (ee_size_t j = 0; j < cols; ++j) {
-            mpz_clear(rtd[i][j].rho);
-            mpz_clear(rtd[i][j].theta);
+            mpz_clear(rt[i][j].rho);
+            mpz_clear(rt[i][j].theta);
         }
     }
     
@@ -383,6 +383,13 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 0; j < cols; ++j) {
             mpz_clear(z[i][j].item);
+        }
+    }
+    
+    for (ee_size_t i = 0; i < zrows; ++i) {
+        ee_size_t cols = block->size >> i;
+        for (ee_size_t j = 0; j < cols; ++j) {
+            mpz_clear(delta[i][j]);
         }
     }
 
@@ -393,10 +400,10 @@ delta_i_calloc_error:
     free(delta);
 delta_calloc_error:
     for (ee_size_t i = 0; i < block->sigma; ++i) {
-        free(rtd[i]);
+        free(rt[i]);
     }
 rt_i_calloc_error:
-    free(rtd);
+    free(rt);
 rt_calloc_error:
     for (ee_size_t i = 0; i < zrows; ++i) {
         free(z[i]);

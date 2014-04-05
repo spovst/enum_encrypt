@@ -9,6 +9,7 @@
 #include "statistics.h"
 #include "numeration.h"
 #include "util.h"
+#include "splitter.h"
 
 void
 ee_sdata_clear(ee_sdata_t *data)
@@ -134,5 +135,53 @@ ee_subset_deserialize(ee_int_t *subset, ee_size_t sigma, ee_sdata_t *data)
                 bit_info.current_bit);
         *subset = ee_bit_set(*subset, i - 1, bit);
         ee_bit_info_ls_inc(&bit_info);
+    }
+}
+
+ee_int_t
+ee_source_info_serialize(ee_sdata_t *data, ee_source_t *source, ee_size_t mu)
+{
+    ee_int_t status = EE_SUCCESS;
+    ee_size_t bytes_number;
+    ee_bit_info_t bit_info = EE_BIT_INFO_DEFAULT;
+    
+    data->bits_number = (mu + 1 + 4) * EE_BITS_IN_BYTE;
+    bytes_number = EE_EVAL_BYTES_NUMBER(data->bits_number);
+    data->bytes = calloc(bytes_number, sizeof(ee_byte_t));
+    if (NULL == data->bytes) {
+        status = EE_ALLOC_FAILURE;
+        goto calloc_error;
+    }
+    
+    memcpy(data->bytes, source->prefix, mu);
+    data->bytes[mu] = source->chars[source->length - 1];
+    bit_info.current_byte = mu + 1;
+    for (ee_size_t i = 0; i < 4 * EE_BITS_IN_BYTE; ++i) {
+        ee_size_t bit = ee_bit_get(source->length, i);
+        ee_int_t value = data->bytes[bit_info.current_byte];
+        value = ee_bit_set(value, bit_info.current_bit, bit);
+        data->bytes[bit_info.current_byte] = value;
+        ee_bit_info_ms_inc(&bit_info);
+    }
+    
+calloc_error:
+    return status;
+}
+
+void
+ee_source_info_deserialize(ee_source_t *source, ee_char_t *last_char,
+        ee_size_t *length, ee_sdata_t *data, ee_size_t mu)
+{
+    ee_bit_info_t bit_info = EE_BIT_INFO_DEFAULT;
+    
+    ee_memset(source->prefix, 0, mu + 1);
+    memcpy(source->prefix, data->bytes, mu);
+    *last_char = data->bytes[mu];
+    bit_info.current_byte = mu + 1;
+    for (ee_size_t i = 0; i < 4 * EE_BITS_IN_BYTE; ++i) {
+        ee_size_t bit = ee_bit_get(data->bytes[bit_info.current_byte],
+                bit_info.current_bit);
+        *length = ee_bit_set(*length, i, bit);
+        ee_bit_info_ms_inc(&bit_info);
     }
 }
