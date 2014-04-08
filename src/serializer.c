@@ -174,7 +174,7 @@ ee_source_info_deserialize(ee_source_t *source, ee_char_t *last_char,
 {
     ee_bit_info_t bit_info = EE_BIT_INFO_DEFAULT;
     
-    ee_memset(source->prefix, 0, mu + 1);
+    ee_memset(source->prefix, 0, mu);
     memcpy(source->prefix, data->bytes, mu);
     *last_char = data->bytes[mu];
     bit_info.current_byte = mu + 1;

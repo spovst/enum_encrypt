@@ -43,7 +43,7 @@ ee_source_init(ee_source_t *source, const ee_char_t *prefix, ee_size_t mu)
     
     source->current_char = source->chars;
     
-    source->prefix = calloc(mu + 1, sizeof(*(source->prefix)));
+    source->prefix = calloc(mu, sizeof(*(source->prefix)));
     if (NULL == source->prefix) {
         free(source->chars);
         return EE_ALLOC_FAILURE;
@@ -161,8 +161,7 @@ ee_source_list_find(ee_source_list_t *list, const ee_char_t *window_start)
     ee_source_t *source = NULL;
     
     for (ee_source_list_node_t *n = list->head; n != list->tail; n = n->next) {
-        if (       (NULL != n->source->prefix)
-                && (0 == strncmp(n->source->prefix, window_start, list->mu))) {
+        if (0 == memcmp(n->source->prefix, window_start, list->mu)) {
             source = n->source;
             break;
         }
