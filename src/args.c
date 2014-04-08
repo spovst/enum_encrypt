@@ -7,6 +7,25 @@
 #include "common.h"
 #include "args.h"
 
+#define EE_TO_STR_HELPER(arg) #arg
+#define EE_TO_STR(arg) EE_TO_STR_HELPER(arg)
+
+#define EE_MODE_DEFAULT EE_MODE_ENCRYPT
+#define EE_MODE_DEFAULT_STR "encrypt"
+
+#define EE_SIGMA_DEFAULT 8
+#define EE_SIGMA_DEFAULT_STR EE_TO_STR(EE_SIGMA_DEFAULT)
+#define EE_SIGMA_MIN 1
+#define EE_SIGMA_MAX 16
+
+#define EE_MU_DEFAULT 0
+#define EE_MU_DEFAULT_STR EE_TO_STR(EE_MU_DEFAULT)
+#define EE_MU_MIN 0
+#define EE_MU_MAX 255
+
+#define EE_OUTPUT_FILE_DEFAULT "a.out"
+#define EE_OUTPUT_FILE_DEFAULT_STR EE_OUTPUT_FILE_DEFAULT
+
 #define EE_SEE_HELP_MSG "see --help for more information"
 #define EE_SEE_HELP(prog) \
         do { \
@@ -62,12 +81,12 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     ee_bool_t mu_specified = EE_FALSE;
     ee_bool_t output_specified = EE_FALSE;
     
-    args->mode = EE_MODE_ENCRYPT;
-    args->sigma = 8;
-    args->mu = 0;
+    args->mode = EE_MODE_DEFAULT;
+    args->sigma = EE_SIGMA_DEFAULT;
+    args->mu = EE_MU_DEFAULT;
     args->key = NULL;
     args->input_file = NULL;
-    args->output_file = "a.out";
+    args->output_file = EE_OUTPUT_FILE_DEFAULT;
     
     int c;
     while (-1 != (c = getopt_long(argc, argv, opts, lopts, NULL))) {
@@ -101,9 +120,9 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 goto end;
             }
             
-            if (1 > args->sigma || 16 < args->sigma) {
-                fprintf(stderr, "%s: '--sigma' must be in range [1; 16]\n",
-                        argv[0]);
+            if (EE_SIGMA_MIN > args->sigma || EE_SIGMA_MAX < args->sigma) {
+                fprintf(stderr, "%s: '--sigma' must be in range [%d; %d]\n",
+                        argv[0], EE_SIGMA_MIN, EE_SIGMA_MAX);
                 EE_SEE_HELP(argv[0]);
                 status = EE_FAILURE;
                 goto end;
@@ -114,7 +133,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
         case 'u':
             EE_CHECK_OPTARG(argv[0], "'--mu'", status, end);
             args->mu = atoi(optarg);
-            if (0 == args->sigma && '0' != optarg[0]) {
+            if (0 == args->mu && '0' != optarg[0]) {
                 fprintf(stderr, "%s: '--mu' must be an integer value\n",
                         argv[0]);
                 EE_SEE_HELP(argv[0]);
@@ -122,9 +141,9 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 goto end;
             }
             
-            if (255 < args->mu) {
-                fprintf(stderr, "%s: '--mu' must be in range [0; 255]\n",
-                        argv[0]);
+            if (EE_MU_MIN > args->mu || EE_MU_MAX < args->mu) {
+                fprintf(stderr, "%s: '--mu' must be in range [%d; %d]\n",
+                        argv[0], EE_MU_MIN, EE_MU_MAX);
                 EE_SEE_HELP(argv[0]);
                 status = EE_FAILURE;
                 goto end;
@@ -164,19 +183,19 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     args->input_file = argv[optind];
     
     if (EE_FALSE == mode_specified) {
-        EE_USED_DEFAULT_VALUE(argv[0], "'--mode'", "encrypt");
+        EE_USED_DEFAULT_VALUE(argv[0], "'--mode'", EE_MODE_DEFAULT_STR);
     }
     
     if (EE_FALSE == sigma_specified) {
-        EE_USED_DEFAULT_VALUE(argv[0], "'--sigma'", "8");
+        EE_USED_DEFAULT_VALUE(argv[0], "'--sigma'", EE_SIGMA_DEFAULT_STR);
     }
     
     if (EE_FALSE == mu_specified) {
-        EE_USED_DEFAULT_VALUE(argv[0], "'--mu'", "0");
+        EE_USED_DEFAULT_VALUE(argv[0], "'--mu'", EE_MU_DEFAULT_STR);
     }
     
     if (EE_FALSE == output_specified) {
-        EE_USED_DEFAULT_VALUE(argv[0], "'--output'", args->output_file);
+        EE_USED_DEFAULT_VALUE(argv[0], "'--output'", EE_OUTPUT_FILE_DEFAULT_STR);
     }
     
 end:
@@ -190,19 +209,21 @@ ee_print_help_msg_s(void)
     printf("\n");
     printf("where possible options include:\n");
     printf("\t-m, --mode=[encrypt|decrypt] \tspecifies the mode; 'encrypt' for encrypting the source\n"
-           "\t                             \tinput file end writing result to output file and 'decrypt'\n"
+           "\t                             \tinput file and writing result to output file, and 'decrypt'\n"
            "\t                             \tfor decrypt the encrypted input file and writing result\n"
            "\t                             \tto output file; also allowed the reduction;\n"
-           "\t                             \t'encrypt' by default\n");
+           "\t                             \t'%s' by default\n", EE_MODE_DEFAULT_STR);
     printf("\t-s, --sigma=[VALUE]          \tspecifies the block size is calculated as 2^VALUE;\n"
-           "\t                             \tthe valid values in range [1; 16]; '8' by default\n");
+           "\t                             \tthe valid values in range [%d; %d]; '%d' by default\n",
+           EE_SIGMA_MIN, EE_SIGMA_MAX, EE_SIGMA_DEFAULT);
     printf("\t-u, --mu=[VALUE]             \tspecifies the memory size in initial message source;\n"
            "\t                             \tif this value is 0 then initial message source considered\n"
            "\t                             \tto message source without memory; the value must be in\n"
-           "\t                             \trange [0; 255]; '0' by default\n");
+           "\t                             \trange [%d; %d]; '%d' by default\n",
+           EE_MU_MIN, EE_MU_MAX, EE_MU_DEFAULT);
     printf("\t-o, --output=[FILE]          \tspecifies the output file to which to write the result\n"
            "\t                             \tof the encryption or decryption (depending on the --mode);\n"
-           "\t                             \t'a.out' by default\n");
+           "\t                             \t'%s' by default\n", EE_OUTPUT_FILE_DEFAULT);
     printf("\t-k, --key=[KEY]              \tspecifies the secret key for encryption or decryption\n"
            "\t                             \tthe message\n");
     printf("\t-h, --help                   \tshow this help message\n");

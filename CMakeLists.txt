@@ -11,6 +11,7 @@ set(LANG_STD "c99")
 set(ARCH "32")
 
 set(CMAKE_C_FLAGS "-Wall -pedantic -funsigned-char -O${OPT_LVL} -std=${LANG_STD} -m${ARCH}")
+set(CMAKE_EXE_LINKER_FLAGS "-s")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
