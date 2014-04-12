@@ -28,22 +28,29 @@
 #define EE_BREAK_IF_FAILURE(status) EE_BREAK_IF((EE_FAILURE == (status)))
 
 ee_int_t
-ee_encrypt_source_list_s(ee_file_t *outfile, ee_source_list_t *sources, ee_key_t *key, ee_size_t sigma);
+ee_encrypt_source_list_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_list_t *sources, ee_key_t *key, ee_size_t sigma);
 ee_int_t
-ee_encrypt_source_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key, ee_size_t sigma, ee_size_t mu);
+ee_encrypt_source_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_t *source, ee_key_t *key, ee_size_t sigma, ee_size_t mu);
 ee_int_t
-ee_encrypt_source_chars_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key, ee_size_t sigma);
+ee_encrypt_source_chars_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_t *source, ee_key_t *key, ee_size_t sigma);
 
 ee_int_t
-ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *infile, ee_key_t *key, ee_size_t sigma);
+ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_key_t *key, ee_size_t sigma);
 ee_int_t
-ee_decrypt_source_s(ee_source_t *source, ee_file_t *infile, ee_key_t *key, ee_size_t sigma, ee_size_t mu);
+ee_decrypt_source_s(ee_source_t *source, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_key_t *key, ee_size_t sigma, ee_size_t mu);
 ee_int_t
-ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *infile, ee_size_t length, ee_key_t *key, ee_size_t sigma);
+ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_size_t length, ee_key_t *key, ee_size_t sigma);
 
 ee_int_t
-ee_encrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
-        ee_size_t sigma, ee_size_t mu)
+ee_encrypt(ee_file_t *pub_outfile, ee_file_t *pri_outfile, ee_file_t *infile,
+        ee_file_t *srcsfile, const ee_char_t *key_data, ee_size_t sigma,
+        ee_size_t mu)
 {
     ee_int_t status;
     
@@ -60,8 +67,14 @@ ee_encrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
     EE_GOTO_IF_NOT_SUCCESS(status, message_read_error);
     status = ee_source_split(&sources, &message);
     EE_GOTO_IF_NOT_SUCCESS(status, source_split_error);
-    status = ee_encrypt_source_list_s(outfile, &sources, &key, sigma);
+    status = ee_encrypt_source_list_s(pub_outfile, pri_outfile, &sources, &key,
+            sigma);
+    EE_GOTO_IF_NOT_SUCCESS(status, encrypt_source_error);
+    if (NULL != srcsfile) {
+        status = ee_file_dump_sources(srcsfile, &sources);
+    }
     
+encrypt_source_error:
 source_split_error:
     ee_message_deinit(&message);
 message_read_error:
@@ -73,8 +86,8 @@ key_init_error:
 }
 
 ee_int_t
-ee_decrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
-        ee_size_t sigma, ee_size_t mu)
+ee_decrypt(ee_file_t *outfile, ee_file_t *pub_infile, ee_file_t *pri_infile,
+        const ee_char_t *key_data, ee_size_t sigma, ee_size_t mu)
 {
     ee_int_t status;
     
@@ -89,7 +102,8 @@ ee_decrypt(ee_file_t *outfile, ee_file_t *infile, const ee_char_t *key_data,
     EE_GOTO_IF_NOT_SUCCESS(status, key_init_error);
     status = ee_source_list_init(&sources, mu);
     EE_GOTO_IF_NOT_SUCCESS(status, sources_init_error);
-    status = ee_decrypt_source_list_s(&sources, infile, &key, sigma);
+    status = ee_decrypt_source_list_s(&sources, pub_infile, pri_infile, &key,
+            sigma);
     EE_GOTO_IF_NOT_SUCCESS(status, decrypt_sources_error);
     message_length = ee_source_list_eval_message_length(&sources);
     status = ee_message_init(&message, message_length);
@@ -110,12 +124,14 @@ key_init_error:
 }
 
 ee_int_t
-ee_encrypt_source_list_s(ee_file_t *outfile, ee_source_list_t *sources, ee_key_t *key, ee_size_t sigma)
+ee_encrypt_source_list_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_list_t *sources, ee_key_t *key, ee_size_t sigma)
 {
     ee_int_t status = EE_SUCCESS;
     
     for (ee_source_list_node_t *n = sources->head; n != sources->tail; n = n->next) {
-        status = ee_encrypt_source_s(outfile, n->source, key, sigma, sources->mu);
+        status = ee_encrypt_source_s(pub_outfile, pri_outfile, n->source, key,
+                sigma, sources->mu);
         EE_BREAK_IF_NOT_SUCCESS(status);
     }
     
@@ -123,7 +139,8 @@ ee_encrypt_source_list_s(ee_file_t *outfile, ee_source_list_t *sources, ee_key_t
 }
 
 ee_int_t
-ee_encrypt_source_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key, ee_size_t sigma, ee_size_t mu)
+ee_encrypt_source_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_t *source, ee_key_t *key, ee_size_t sigma, ee_size_t mu)
 {
     ee_int_t status = EE_SUCCESS;
     
@@ -131,10 +148,11 @@ ee_encrypt_source_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key, ee_s
     
     status = ee_source_info_serialize(&si_sdata, source, mu);
     EE_GOTO_IF_NOT_SUCCESS(status, si_sdata_serialize_error);
-    status = ee_file_write_sdata(outfile, &si_sdata);
+    status = ee_file_write_sdata(pub_outfile, &si_sdata);
     EE_GOTO_IF_NOT_SUCCESS(status, si_sdata_write_error);
     if (1 != source->length) {
-        status = ee_encrypt_source_chars_s(outfile, source, key, sigma);
+        status = ee_encrypt_source_chars_s(pub_outfile, pri_outfile, source,
+                key, sigma);
     }
     
 si_sdata_write_error:
@@ -144,7 +162,8 @@ si_sdata_serialize_error:
 }
 
 ee_int_t
-ee_encrypt_source_chars_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key, ee_size_t sigma)
+ee_encrypt_source_chars_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
+        ee_source_t *source, ee_key_t *key, ee_size_t sigma)
 {
     ee_size_t status;
     ee_int_t block_status;
@@ -183,11 +202,11 @@ ee_encrypt_source_chars_s(ee_file_t *outfile, ee_source_t *source, ee_key_t *key
         EE_BREAK_IF_NOT_SUCCESS(status);
         status = ee_subset_serialize(&subset_data, subnumber.subset, sigma);
         EE_BREAK_IF_NOT_SUCCESS(status);
-        status = ee_file_write_sdata(outfile, &statistics_data);
+        status = ee_file_write_sdata(pub_outfile, &statistics_data);
         EE_BREAK_IF_NOT_SUCCESS(status);
-        status = ee_file_write_sdata(outfile, &subset_data);
+        status = ee_file_write_sdata(pub_outfile, &subset_data);
         EE_BREAK_IF_NOT_SUCCESS(status);
-        status = ee_file_write_sdata(outfile, &subnum_data);
+        status = ee_file_write_sdata(pri_outfile, &subnum_data);
         EE_BREAK_IF_NOT_SUCCESS(status);
         ee_sdata_clear(&subset_data);
         ee_sdata_clear(&subnum_data);
@@ -207,7 +226,8 @@ block_init_error:
 }
 
 ee_int_t
-ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *infile, ee_key_t *key, ee_size_t sigma)
+ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_key_t *key, ee_size_t sigma)
 {
     ee_int_t status;
     
@@ -225,7 +245,8 @@ ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *infile, ee_key_t 
             break;
         }
         
-        status = ee_decrypt_source_s(source, infile, key, sigma, sources->mu);
+        status = ee_decrypt_source_s(source, pub_infile, pri_infile, key, sigma,
+                sources->mu);
         if (EE_SUCCESS != status) {
             ee_source_deinit(source);
             free(source);
@@ -248,7 +269,8 @@ ee_decrypt_source_list_s(ee_source_list_t *sources, ee_file_t *infile, ee_key_t 
 }
 
 ee_int_t
-ee_decrypt_source_s(ee_source_t *source, ee_file_t *infile, ee_key_t *key, ee_size_t sigma, ee_size_t mu)
+ee_decrypt_source_s(ee_source_t *source, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_key_t *key, ee_size_t sigma, ee_size_t mu)
 {
     ee_int_t status;
     
@@ -258,11 +280,12 @@ ee_decrypt_source_s(ee_source_t *source, ee_file_t *infile, ee_key_t *key, ee_si
     ee_char_t last_char;
     ee_size_t length;
 
-    status = ee_file_read_sdata(&si_sdata, si_bit_length, infile);
+    status = ee_file_read_sdata(&si_sdata, si_bit_length, pub_infile);
     EE_GOTO_IF_NOT_SUCCESS(status, si_sdata_read_error);
     ee_source_info_deserialize(source, &last_char, &length, &si_sdata, mu);
     if (1 != length) {
-        status = ee_decrypt_source_chars_s(source, infile, length, key, sigma);
+        status = ee_decrypt_source_chars_s(source, pub_infile, pri_infile,
+                length, key, sigma);
         EE_GOTO_IF_NOT_SUCCESS(status, decrypt_source_error);
     }
     
@@ -275,7 +298,8 @@ si_sdata_read_error:
 }
 
 ee_int_t
-ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *infile, ee_size_t length, ee_key_t *key, ee_size_t sigma)
+ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *pub_infile,
+        ee_file_t *pri_infile, ee_size_t length, ee_key_t *key, ee_size_t sigma)
 {
     ee_int_t status;
         
@@ -305,14 +329,14 @@ ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *infile, ee_size_t leng
     inc_length = 0;
     do {
         ee_size_t stats_len = (sigma + 1) * EE_ALPHABET_SIZE;
-        status = ee_file_read_sdata(&statistics_data, stats_len, infile);
+        status = ee_file_read_sdata(&statistics_data, stats_len, pub_infile);
         if (EE_END_OF_FILE == status) {
             status = EE_SUCCESS;
             break;
         }
         
         ee_statistics_deserialize(&statistics, &statistics_data, sigma);
-        status = ee_file_read_sdata(&subset_data, sigma + 4, infile);
+        status = ee_file_read_sdata(&subset_data, sigma + 4, pub_infile);
         EE_BREAK_IF_NOT_SUCCESS(status);
         ee_subset_deserialize(&(subnumber.subset), sigma, &subset_data);
         ee_block_generate(&block, &statistics);
@@ -323,7 +347,7 @@ ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *infile, ee_size_t leng
         ee_eval_subnum_bit_length(&(subnumber.subnum_bit_length), delta,
                 subnumber.subset);
         status = ee_file_read_sdata(&subnum_data, subnumber.subnum_bit_length,
-                infile);
+                pri_infile);
         EE_BREAK_IF_NOT_SUCCESS(status);
         ee_sdata_decrypt(&subnum_data, key);
         ee_mpz_deserialize(subnumber.subnum, subnumber.subnum_bit_length,

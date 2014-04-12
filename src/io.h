@@ -7,6 +7,7 @@
 #include "bits.h"
 #include "block.h"
 #include "serializer.h"
+#include "splitter.h"
 
 #define EE_MODE_READ 1
 #define EE_MODE_WRITE 2
@@ -60,5 +61,8 @@ ee_int_t
 ee_file_read_message(ee_message_t *message, ee_file_t *file);
 ee_int_t
 ee_file_write_message(ee_file_t *file, ee_message_t *message);
+
+ee_int_t
+ee_file_dump_sources(ee_file_t *file, ee_source_list_t *sources);
 
 #endif	/* IO_H */

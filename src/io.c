@@ -360,6 +360,37 @@ ee_file_write_message(ee_file_t *file, ee_message_t *message)
     return file->status;
 }
 
+ee_int_t
+ee_file_dump_sources(ee_file_t *file, ee_source_list_t *sources)
+{
+    ee_char_t colon[] = ": ";
+    ee_char_t sn[] = "\n";
+    
+    for (ee_source_list_node_t *n = sources->head; n != sources->tail; n = n->next) {
+        ee_file_write(file, n->source->prefix, sources->mu);
+        if (EE_SUCCESS != file->status) {
+            break;
+        }
+        
+        ee_file_write(file, (ee_byte_t *)colon, strlen(colon));
+        if (EE_SUCCESS != file->status) {
+            break;
+        }
+        
+        ee_file_write(file, n->source->chars, n->source->length);
+        if (EE_SUCCESS != file->status) {
+            break;
+        }
+        
+        ee_file_write(file, (ee_byte_t *)sn, strlen(sn));
+        if (EE_SUCCESS != file->status) {
+            break;
+        }
+    }
+    
+    return file->status;
+}
+
 static const ee_char_t *
 ee_file_smode_build_s(ee_int_t mode)
 {

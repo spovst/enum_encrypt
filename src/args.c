@@ -63,15 +63,17 @@ ee_print_help_msg_s(void);
 ee_int_t
 ee_args_parse(ee_args_t *args, int argc, char *argv[])
 {
-    static const char *opts = "m:s:u:o:k:h";
+    static const char *opts = "m:s:u:dpo:k:h";
     static const struct option lopts[] = {
-        { "mode",   required_argument, NULL, 'm' },
-        { "sigma",  required_argument, NULL, 's' },
-        { "mu",     required_argument, NULL, 'u' },
-        { "output", required_argument, NULL, 'o' },
-        { "key",    required_argument, NULL, 'k' },
-        { "help",   no_argument,       NULL, 'h' },
-        { NULL,     0,                 NULL, 0   }
+        { "mode",         required_argument, NULL, 'm' },
+        { "sigma",        required_argument, NULL, 's' },
+        { "mu",           required_argument, NULL, 'u' },
+        { "dump-sources", no_argument,       NULL, 'd' },
+        { "part",         no_argument,       NULL, 'p' },
+        { "output",       required_argument, NULL, 'o' },
+        { "key",          required_argument, NULL, 'k' },
+        { "help",         no_argument,       NULL, 'h' },
+        { NULL,           0,                 NULL, 0   }
     };
     
     ee_int_t status = EE_SUCCESS;
@@ -79,11 +81,14 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     ee_bool_t mode_specified = EE_FALSE;
     ee_bool_t sigma_specified = EE_FALSE;
     ee_bool_t mu_specified = EE_FALSE;
+    ee_bool_t dump_sources_specified = EE_FALSE;
     ee_bool_t output_specified = EE_FALSE;
     
     args->mode = EE_MODE_DEFAULT;
     args->sigma = EE_SIGMA_DEFAULT;
     args->mu = EE_MU_DEFAULT;
+    args->dump_sources = EE_FALSE;
+    args->part = EE_FALSE;
     args->key = NULL;
     args->input_file = NULL;
     args->output_file = EE_OUTPUT_FILE_DEFAULT;
@@ -151,6 +156,13 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
             
             mu_specified = EE_TRUE;
             break;
+        case 'd':
+            args->dump_sources = EE_TRUE;
+            dump_sources_specified = EE_TRUE;
+            break;
+        case 'p':
+            args->part = EE_TRUE;
+            break;
         case 'o':
             EE_CHECK_OPTARG(argv[0], "'--output'", status, end);
             args->output_file = optarg;
@@ -194,6 +206,10 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
         EE_USED_DEFAULT_VALUE(argv[0], "'--mu'", EE_MU_DEFAULT_STR);
     }
     
+    if (EE_TRUE == dump_sources_specified && EE_MODE_DECRYPT == args->mode) {
+        printf("%s: '--dump-sources' has no effect in decryption mode", argv[0]);
+    }
+    
     if (EE_FALSE == output_specified) {
         EE_USED_DEFAULT_VALUE(argv[0], "'--output'", EE_OUTPUT_FILE_DEFAULT_STR);
     }
@@ -205,7 +221,7 @@ end:
 static void
 ee_print_help_msg_s(void)
 {
-    printf("Usage: ee [options] file\n");
+    printf("Usage: ee [options] INPUT\n");
     printf("\n");
     printf("where possible options include:\n");
     printf("\t-m, --mode=[encrypt|decrypt] \tspecifies the mode; 'encrypt' for encrypting the source\n"
@@ -221,6 +237,13 @@ ee_print_help_msg_s(void)
            "\t                             \tto message source without memory; the value must be in\n"
            "\t                             \trange [%d; %d]; '%d' by default\n",
            EE_MU_MIN, EE_MU_MAX, EE_MU_DEFAULT);
+    printf("\t-d, --dump-sources           \tin encryption mode creates file 'sources.dump' with result of\n"
+           "\t                             \tsource splitting; in decryption mode has no effect\n");
+    printf("\t-p, --part                   \tin encryption mode splits output into two files - FILE.pri and\n"
+           "\t                             \tFILE.pub which contains private data (encrypted subnumbers) and\n"
+           "\t                             \tpublic data (statistics, prefixes, etc.); in decryption mode\n"
+           "\t                             \tspecifies that public and private data need to take from two\n"
+           "\t                             \tdifferent files INPUT.pub and INPUT.pri files\n");
     printf("\t-o, --output=[FILE]          \tspecifies the output file to which to write the result\n"
            "\t                             \tof the encryption or decryption (depending on the --mode);\n"
            "\t                             \t'%s' by default\n", EE_OUTPUT_FILE_DEFAULT);

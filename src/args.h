@@ -12,6 +12,8 @@ typedef struct ee_args_s {
     ee_mode_t mode;
     ee_size_t sigma;
     ee_size_t mu;
+    ee_bool_t dump_sources;
+    ee_bool_t part;
     const ee_char_t *key;
     const ee_char_t *input_file;
     const ee_char_t *output_file;
