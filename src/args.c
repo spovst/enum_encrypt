@@ -75,15 +75,15 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
         { "help",         no_argument,       NULL, 'h' },
         { NULL,           0,                 NULL, 0   }
     };
-    
+
     ee_int_t status = EE_SUCCESS;
-    
+
     ee_bool_t mode_specified = EE_FALSE;
     ee_bool_t sigma_specified = EE_FALSE;
     ee_bool_t mu_specified = EE_FALSE;
     ee_bool_t dump_sources_specified = EE_FALSE;
     ee_bool_t output_specified = EE_FALSE;
-    
+
     args->mode = EE_MODE_DEFAULT;
     args->sigma = EE_SIGMA_DEFAULT;
     args->mu = EE_MU_DEFAULT;
@@ -92,7 +92,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
     args->key = NULL;
     args->input_file = NULL;
     args->output_file = EE_OUTPUT_FILE_DEFAULT;
-    
+
     int c;
     while (-1 != (c = getopt_long(argc, argv, opts, lopts, NULL))) {
         ee_size_t arg_len;
@@ -111,7 +111,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 status = EE_FAILURE;
                 goto end;
             }
-            
+
             mode_specified = EE_TRUE;
             break;
         case 's':
@@ -124,7 +124,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 status = EE_FAILURE;
                 goto end;
             }
-            
+
             if (EE_SIGMA_MIN > args->sigma || EE_SIGMA_MAX < args->sigma) {
                 fprintf(stderr, "%s: '--sigma' must be in range [%d; %d]\n",
                         argv[0], EE_SIGMA_MIN, EE_SIGMA_MAX);
@@ -132,7 +132,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 status = EE_FAILURE;
                 goto end;
             }
-            
+
             sigma_specified = EE_TRUE;
             break;
         case 'u':
@@ -145,7 +145,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 status = EE_FAILURE;
                 goto end;
             }
-            
+
             if (EE_MU_MIN > args->mu || EE_MU_MAX < args->mu) {
                 fprintf(stderr, "%s: '--mu' must be in range [%d; %d]\n",
                         argv[0], EE_MU_MIN, EE_MU_MAX);
@@ -153,7 +153,7 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
                 status = EE_FAILURE;
                 goto end;
             }
-            
+
             mu_specified = EE_TRUE;
             break;
         case 'd':
@@ -183,37 +183,38 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
             break;
         }
     }
-    
+
     if (optind == argc) {
         EE_OPTION_REQUIRED(argv[0], "input file", status, end);
     }
-    
+
     if (NULL == args->key) {
         EE_OPTION_REQUIRED(argv[0], "'--key'", status, end);
     }
-    
+
     args->input_file = argv[optind];
-    
+
     if (EE_FALSE == mode_specified) {
         EE_USED_DEFAULT_VALUE(argv[0], "'--mode'", EE_MODE_DEFAULT_STR);
     }
-    
+
     if (EE_FALSE == sigma_specified) {
         EE_USED_DEFAULT_VALUE(argv[0], "'--sigma'", EE_SIGMA_DEFAULT_STR);
     }
-    
+
     if (EE_FALSE == mu_specified) {
         EE_USED_DEFAULT_VALUE(argv[0], "'--mu'", EE_MU_DEFAULT_STR);
     }
-    
+
     if (EE_TRUE == dump_sources_specified && EE_MODE_DECRYPT == args->mode) {
-        printf("%s: '--dump-sources' has no effect in decryption mode", argv[0]);
+        printf("%s: '--dump-sources' has no effect in decryption mode\n",
+                argv[0]);
     }
-    
+
     if (EE_FALSE == output_specified) {
         EE_USED_DEFAULT_VALUE(argv[0], "'--output'", EE_OUTPUT_FILE_DEFAULT_STR);
     }
-    
+
 end:
     return status;
 }

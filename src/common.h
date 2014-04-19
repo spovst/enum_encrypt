@@ -26,7 +26,7 @@
 #define EE_TRUE 1
 #define EE_FALSE 0
 
-typedef unsigned long int ee_int_t;
+typedef long int ee_int_t;
 typedef size_t ee_size_t;
 typedef char ee_char_t;
 typedef char ee_bool_t;

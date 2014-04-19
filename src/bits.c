@@ -16,7 +16,7 @@ ee_bit_set(ee_int_t value, ee_size_t bit_idx, ee_size_t bit)
     } else {
         value |= 1 << bit_idx;
     }
-    
+
     return value;
 }
 

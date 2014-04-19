@@ -70,43 +70,43 @@ ee_number_eval(ee_number_t *number, ee_block_t *block,
     mpz_t *rho = NULL;
     mpz_t *theta = NULL;
     mpz_t *delta = NULL;
-    
+
     rho = calloc(block->size, sizeof(*rho));
     if (NULL == rho) {
         status = EE_ALLOC_FAILURE;
         goto rho_calloc_error;
     }
-    
+
     theta = calloc(block->size, sizeof(*theta));
     if (NULL == theta) {
         status = EE_ALLOC_FAILURE;
         goto theta_calloc_error;
     }
-    
+
     delta = calloc(block->size, sizeof(*delta));
     if (NULL == delta) {
         status = EE_ALLOC_FAILURE;
         goto delta_calloc_error;
     }
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_init(rho[i]);
         mpz_init(theta[i]);
         mpz_init(delta[i]);
     }
-    
+
     ee_eval_rtd0_s(rho, theta, delta, block, statistics);
     ee_eval_rtd_s(rho, theta, delta, block);
-    
+
     mpz_cdiv_q(number->eta, theta[0], rho[0]);
     mpz_cdiv_q(number->delta, delta[0], rho[0]);
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_clear(rho[i]);
         mpz_clear(theta[i]);
         mpz_clear(delta[i]);
     }
-    
+
     free(delta);
 delta_calloc_error:
     free(theta);
@@ -121,9 +121,9 @@ ee_subnumber_eval(ee_subnumber_t *subnumber, ee_number_t *number)
 {
     ee_size_t bit_idx;
     mpz_t diff;
-    
+
     mpz_init(diff);
-    
+
     mpz_set(subnumber->subnum, number->eta);
     subnumber->subset = 0;
     for (bit_idx = mpz_sizeinbase(number->delta, 2); 0 != bit_idx; --bit_idx) {
@@ -138,9 +138,9 @@ ee_subnumber_eval(ee_subnumber_t *subnumber, ee_number_t *number)
             }
         }
     }
-    
+
     subnumber->subnum_bit_length = bit_idx;
-    
+
     mpz_clear(diff);
 }
 
@@ -149,26 +149,26 @@ ee_eval_rho(mpz_t out_rho, ee_block_t *block, ee_statistics_t *statistics)
 {
     ee_int_t status = EE_SUCCESS;
     mpz_t *rho = NULL;
-    
+
     rho = calloc(block->size, sizeof(*rho));
     if (NULL == rho) {
         status = EE_ALLOC_FAILURE;
         goto rho_calloc_error;
     }
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_init(rho[i]);
     }
-    
+
     ee_eval_rtd0_s(rho, NULL, NULL, block, statistics);
     ee_eval_rtd_s(rho, NULL, NULL, block);
-    
+
     mpz_set(out_rho, rho[0]);
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_clear(rho[i]);
     }
-    
+
     free(rho);
 rho_calloc_error:
     return status;
@@ -180,26 +180,26 @@ ee_eval_delta(mpz_t out_delta, mpz_t rho, ee_block_t *block,
 {
     ee_int_t status = EE_SUCCESS;
     mpz_t *delta = NULL;
-    
+
     delta = calloc(block->size, sizeof(*delta));
     if (NULL == delta) {
         status = EE_ALLOC_FAILURE;
         goto delta_calloc_error;
     }
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_init(delta[i]);
     }
-    
+
     ee_eval_rtd0_s(NULL, NULL, delta, block, statistics);
     ee_eval_rtd_s(NULL, NULL, delta, block);
-    
+
     mpz_cdiv_q(out_delta, delta[0], rho);
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         mpz_clear(delta[i]);
     }
-    
+
     free(delta);
 delta_calloc_error:
     return status;
@@ -222,34 +222,34 @@ ee_number_restore(ee_number_t *number, mpz_t delta, ee_subnumber_t *subnumber)
 {
     ee_size_t bit_idx;
     mpz_t diff;
-    
+
     mpz_init(diff);
-    
+
     bit_idx = mpz_sizeinbase(delta, 2);
     while (0 == mpz_tstbit(delta, bit_idx)) {
         bit_idx -= 1;
     }
-    
+
     mpz_set(number->eta, subnumber->subnum);
     mpz_set(number->delta, delta);
     for (ee_size_t i = subnumber->subset; i > 0; --i) {
         while (0 == mpz_tstbit(delta, bit_idx)) {
             bit_idx -= 1;
         }
-        
+
         mpz_set_ui(diff, 1);
         mpz_mul_2exp(diff, diff, bit_idx);
         mpz_add(number->eta, number->eta, diff);
         bit_idx -= 1;
     }
-    
+
     mpz_clear(diff);
 }
 
 ee_int_t
 ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
         ee_number_t *number)
-{   
+{
     ee_int_t status = EE_SUCCESS;
     ee_int_t *thetas = NULL;
     ee_int_t *indexes = NULL;
@@ -257,19 +257,19 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
     ee_rt_item_t **rt = NULL;
     mpz_t **delta;
     ee_size_t zrows = block->sigma + 1;
-    
+
     thetas = calloc(EE_ALPHABET_SIZE + 1, sizeof(*thetas));
     if (NULL == thetas) {
         status = EE_ALLOC_FAILURE;
         goto thetas_calloc_error;
     }
-    
+
     indexes = calloc(block->sigma + 1, sizeof(*indexes));
     if (NULL == indexes) {
         status = EE_ALLOC_FAILURE;
         goto indexes_calloc_error;
     }
-    
+
     z = calloc(zrows, sizeof(*z));
     if (NULL == z) {
         status = EE_ALLOC_FAILURE;
@@ -282,9 +282,9 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             goto z_i_calloc_error;
         }
     }
-    
-    rt = calloc(block->sigma, sizeof(*z));
-    if (NULL == z) {
+
+    rt = calloc(block->sigma, sizeof(*rt));
+    if (NULL == rt) {
         status = EE_ALLOC_FAILURE;
         goto rt_calloc_error;
     }
@@ -295,14 +295,14 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             goto rt_i_calloc_error;
         }
     }
-    
+
     for (ee_size_t i = 0; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 0; j < cols; ++j) {
             mpz_init(z[i][j].item);
         }
     }
-    
+
     for (ee_size_t i = 0; i < block->sigma; ++i) {
         ee_size_t cols = (block->size >> i) - 1;
         for (ee_size_t j = 0; j < cols; ++j) {
@@ -310,18 +310,18 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             mpz_init(rt[i][j].theta);
         }
     }
-    
+
     thetas[0] = 0;
     for (ee_size_t i = 0; i < EE_ALPHABET_SIZE; ++i) {
         thetas[i + 1] = thetas[i] + statistics->stats[i];
     }
-    
+
     delta = calloc(zrows, sizeof(*delta));
     if (NULL == delta) {
         status = EE_ALLOC_FAILURE;
         goto delta_calloc_error;
     }
-    
+
     for (ee_size_t i = 0; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         delta[i] = calloc(cols, sizeof(**delta));
@@ -330,16 +330,16 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             goto delta_i_calloc_error;
         }
     }
-    
+
     for (ee_size_t i = 0; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 0; j < cols; ++j) {
             mpz_init(delta[i][j]);
         }
     }
-    
+
     block->length = thetas[EE_ALPHABET_SIZE];
-    
+
     for (ee_size_t i = 0; i < block->size; ++i) {
         if (i < block->length) {
             mpz_set_ui(delta[0][i], block->length - i);
@@ -347,7 +347,7 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             mpz_set_ui(delta[0][i], 1);
         }
     }
-    
+
     for (ee_size_t i = 1; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 1; j <= cols; ++j) {
@@ -355,22 +355,22 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
                     delta[i - 1][2 * j - 1]);
         }
     }
-    
+
     mpz_mul(z[block->sigma][0].item, rho, number->eta);
     z[block->sigma][0].init = EE_TRUE;
     for (ee_size_t i = block->sigma; i > 0; --i) {
         mpz_fdiv_q(z[i - 1][0].item, z[i][0].item, delta[i - 1][1]);
         z[i - 1][0].init = EE_TRUE;
     }
-    
+
     for (ee_size_t i = 0; i < block->length; ++i) {
         if (EE_FALSE == z[0][i].init) {
             ee_eval_z_s(z, indexes, i, block, rt, delta);
         }
-        
+
         ee_block_restore_symbol_s(block, i, rt, delta, thetas, z);
     }
-    
+
     for (ee_size_t i = 0; i < block->sigma; ++i) {
         ee_size_t cols = (block->size >> i) - 1;
         for (ee_size_t j = 0; j < cols; ++j) {
@@ -378,14 +378,14 @@ ee_block_restore(ee_block_t *block, ee_statistics_t *statistics, mpz_t rho,
             mpz_clear(rt[i][j].theta);
         }
     }
-    
+
     for (ee_size_t i = 0; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 0; j < cols; ++j) {
             mpz_clear(z[i][j].item);
         }
     }
-    
+
     for (ee_size_t i = 0; i < zrows; ++i) {
         ee_size_t cols = block->size >> i;
         for (ee_size_t j = 0; j < cols; ++j) {
@@ -424,12 +424,12 @@ ee_eval_rtd0_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block,
 {
     ee_int_t iter_stats[EE_ALPHABET_SIZE];
     ee_int_t tmp_theta;
-    
+
     if (NULL != rho) {
         memcpy(iter_stats, statistics->stats, sizeof(iter_stats));
         mpz_set_ui(rho[0], iter_stats[(ee_size_t)block->chars[0]]);
     }
-    
+
     if (NULL != theta) {
         tmp_theta = 0;
         for (ee_size_t i = 1; i < block->length; ++i) {
@@ -440,11 +440,11 @@ ee_eval_rtd0_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block,
 
         mpz_set_ui(theta[0], tmp_theta);
     }
-    
+
     if (NULL != delta) {
         mpz_set_ui(delta[0], block->length);
     }
-    
+
     for (ee_size_t i = 1; i < block->size; ++i) {
         if (i < block->length) {
             if (NULL != rho) {
@@ -470,11 +470,11 @@ ee_eval_rtd0_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block,
             if (NULL != rho) {
                 mpz_set_ui(rho[i], 1);
             }
-            
+
             if (NULL != theta) {
                 mpz_set_ui(theta[i], 0);
             }
-            
+
             if (NULL != delta) {
                 mpz_set_ui(delta[i], 1);
             }
@@ -486,12 +486,12 @@ static void
 ee_eval_rtd_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block)
 {
     mpz_t tmp1, tmp2;
-    
+
     if (NULL != theta && NULL != delta) {
         mpz_init(tmp1);
         mpz_init(tmp2);
     }
-    
+
     for (ee_size_t i = 1; i <= block->sigma; ++i) {
         ee_size_t jmax = 1 << (block->sigma - i);
         for (ee_size_t j = 1; j <= jmax; ++j) {
@@ -500,17 +500,17 @@ ee_eval_rtd_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block)
                 mpz_mul(tmp2, rho[2 * j - 2], theta[2 * j - 1]);
                 mpz_add(theta[j - 1], tmp1, tmp2);
             }
-            
+
             if (NULL != rho) {
                 mpz_mul(rho[j - 1], rho[2 * j - 2], rho[2 * j - 1]);
             }
-            
+
             if (NULL != delta) {
                 mpz_mul(delta[j - 1], delta[2 * j - 2], delta[2 * j - 1]);
             }
         }
     }
-    
+
     if (NULL != theta && NULL != delta) {
         mpz_clear(tmp2);
         mpz_clear(tmp1);
@@ -523,10 +523,10 @@ ee_eval_z_s(ee_z_item_t **z, ee_int_t *indexes, ee_size_t sym_idx,
 {
     ee_size_t cur_z;
     mpz_t tmp1, tmp2;
-    
+
     mpz_init(tmp1);
     mpz_init(tmp2);
-    
+
     indexes[0] = sym_idx;
     for (cur_z = 1; cur_z < block->sigma + 1; ++cur_z) {
         indexes[cur_z] = indexes[cur_z - 1] / 2;
@@ -551,7 +551,7 @@ ee_eval_z_s(ee_z_item_t **z, ee_int_t *indexes, ee_size_t sym_idx,
 
         z[cur_z][indexes[cur_z]].init = EE_TRUE;
     } while (cur_z != 0);
-    
+
     mpz_clear(tmp2);
     mpz_clear(tmp1);
 }
@@ -561,10 +561,10 @@ ee_block_restore_symbol_s(ee_block_t *block, ee_size_t sym_idx,
         ee_rt_item_t **rtd, mpz_t **delta, ee_int_t *thetas, ee_z_item_t **z)
 {
     mpz_t tmp1, tmp2;
-    
+
     mpz_init(tmp1);
     mpz_init(tmp2);
-    
+
     ee_size_t ch;
     for (ch = 0; ch < EE_ALPHABET_SIZE; ++ch) {
         if (       mpz_cmp_ui(z[0][sym_idx].item, thetas[ch]) >= 0
@@ -588,10 +588,10 @@ ee_block_restore_symbol_s(ee_block_t *block, ee_size_t sym_idx,
             break;
         }
     }
-    
+
     mpz_clear(tmp2);
     mpz_clear(tmp1);
-    
+
     for (ee_size_t j = ch + 1; j <= EE_ALPHABET_SIZE; ++j) {
         thetas[j] -= 1;
     }

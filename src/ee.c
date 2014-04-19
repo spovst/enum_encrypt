@@ -30,11 +30,11 @@ main(int argc, char *argv[])
 {
     ee_int_t status = EE_SUCCESS;
     ee_args_t args;
-    
+
     if (EE_SUCCESS != ee_args_parse(&args, argc, argv)) {
         return EE_FAILURE;
     }
-    
+
     switch (args.mode) {
     case EE_MODE_ENCRYPT:
         status = ee_do_encrypt(&args, argv[0]);
@@ -56,12 +56,12 @@ ee_do_encrypt(ee_args_t *args, const char *pname)
     ee_file_t *pub_output_ptr = NULL, *pri_output_ptr = NULL;
     ee_file_t sources;
     ee_file_t *sources_ptr = NULL;
-    
+
     status = ee_do_open(&input, args->input_file, EE_MODE_READ, pname);
     if (EE_SUCCESS != status) {
         goto input_open_error;
     }
-    
+
     if (EE_TRUE == args->part) {
         pub_output_ptr = &pub_output;
         pri_output_ptr = &pri_output;
@@ -79,22 +79,22 @@ ee_do_encrypt(ee_args_t *args, const char *pname)
             goto output_open_error;
         }
     }
-    
+
     if (EE_TRUE == args->dump_sources) {
         status = ee_do_open(&sources, "sources.dump", EE_MODE_WRITE, pname);
         if (EE_SUCCESS != status) {
             goto sources_open_error;
         }
-        
+
         sources_ptr = &sources;
     }
-    
+
     status = ee_encrypt(pub_output_ptr, pri_output_ptr, &input, sources_ptr,
             args->key, args->sigma, args->mu);
     if (EE_SUCCESS != status) {
         ee_print_error(status);
     }
-    
+
     if (EE_TRUE == args->dump_sources) {
         ee_file_close(&sources);
     }
@@ -118,12 +118,12 @@ ee_do_decrypt(ee_args_t *args, const char *pname)
     ee_file_t pub_input, pri_input;
     ee_file_t *pub_input_ptr = NULL, *pri_input_ptr = NULL;
     ee_file_t output;
-    
+
     status = ee_do_open(&output, args->output_file, EE_MODE_WRITE, pname);
     if (EE_SUCCESS != status) {
         goto output_open_error;
     }
-    
+
     if (EE_TRUE == args->part) {
         pub_input_ptr = &pub_input;
         pri_input_ptr = &pri_input;
@@ -141,13 +141,13 @@ ee_do_decrypt(ee_args_t *args, const char *pname)
             goto input_open_error;
         }
     }
-    
+
     status = ee_decrypt(&output, pub_input_ptr, pri_input_ptr, args->key,
             args->sigma, args->mu);
     if (EE_SUCCESS != status) {
         ee_print_error(status);
     }
-    
+
     if (EE_TRUE == args->part) {
         ee_file_close(&pub_input);
         ee_file_close(&pri_input);
@@ -192,7 +192,7 @@ ee_open_pub_pri(ee_file_t *pub_file, ee_file_t *pri_file, const ee_char_t *name,
     if (EE_SUCCESS != status) {
         goto pub_open_error;
     }
-    
+
     status = ee_do_open(pri_file, pri_name, mode, pname);
     if (EE_SUCCESS != status) {
         ee_file_close(pub_file);
@@ -211,7 +211,7 @@ ee_do_open(ee_file_t *file, const ee_char_t *name, ee_int_t mode,
         const ee_char_t *pname)
 {
     ee_int_t status = EE_SUCCESS;
-    
+
     status = ee_file_open(file, name, mode);
     if (EE_SUCCESS != status) {
         switch (status) {
@@ -227,7 +227,7 @@ ee_do_open(ee_file_t *file, const ee_char_t *name, ee_int_t mode,
             break;
         }
     }
-    
+
     return status;
 }
 
