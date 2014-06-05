@@ -1,4 +1,4 @@
 enum_encrypt
 ============
 
-Implementation of a perfect cryptosystem based on enumerative encoding
+Implementation of a strongly ideal cryptosystem based on enumerative coding
