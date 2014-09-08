@@ -3,8 +3,6 @@
 
 #include "source.h"
 
-#include "common.h"
-#include "block.h"
 #include "util.h"
 
 #define EE_CAPACITY_QUANT 256

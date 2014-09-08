@@ -4,12 +4,8 @@
 
 #include "serializer.h"
 
-#include "common.h"
 #include "bits.h"
-#include "statistics.h"
-#include "numeration.h"
 #include "util.h"
-#include "splitter.h"
 
 void
 ee_sdata_clear(ee_sdata_t *data)
@@ -124,7 +120,7 @@ calloc_error:
 }
 
 void
-ee_subset_deserialize(ee_int_t *subset, ee_size_t sigma, ee_sdata_t *data)
+ee_subset_deserialize(ee_int_t *subset, ee_sdata_t *data)
 {
     ee_bit_info_t bit_info = { 0, 0 };
 

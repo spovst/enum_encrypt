@@ -3,16 +3,7 @@
 
 #include "crypt.h"
 
-#include "common.h"
-#include "bits.h"
-#include "io.h"
-#include "statistics.h"
-#include "block.h"
-#include "numeration.h"
 #include "encryption.h"
-#include "serializer.h"
-#include "splitter.h"
-#include "source.h"
 
 #define EE_GOTO_IF_NOT_SUCCESS(status, label) \
         if (EE_SUCCESS != (status)) { \
@@ -26,7 +17,6 @@
         }
 
 #define EE_BREAK_IF_NOT_SUCCESS(status) EE_BREAK_IF((EE_SUCCESS != (status)))
-#define EE_BREAK_IF_FAILURE(status) EE_BREAK_IF((EE_FAILURE == (status)))
 
 ee_int_t
 ee_encrypt_source_list_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
@@ -153,7 +143,7 @@ ee_int_t
 ee_encrypt_source_s(ee_file_t *pub_outfile, ee_file_t *pri_outfile,
         ee_source_t *source, ee_key_t *key, ee_size_t sigma, ee_size_t mu)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
 
     ee_sdata_t si_sdata;
 
@@ -323,8 +313,8 @@ ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *pub_infile,
     ee_sdata_t subnum_data = { .bytes = NULL, .bits_number = 0 };
     ee_sdata_t subset_data = { .bytes = NULL, .bits_number = 0 };
 
-    mpz_t rho;
-    mpz_t delta;
+    mpz_t rho = EE_MPZ_NULL;
+    mpz_t delta = EE_MPZ_NULL;
 
     ee_size_t inc_length;
 
@@ -349,7 +339,7 @@ ee_decrypt_source_chars_s(ee_source_t *source, ee_file_t *pub_infile,
         ee_statistics_deserialize(&statistics, &statistics_data, sigma);
         status = ee_file_read_sdata(&subset_data, sigma + 4, pub_infile);
         EE_BREAK_IF_NOT_SUCCESS(status);
-        ee_subset_deserialize(&(subnumber.subset), sigma, &subset_data);
+        ee_subset_deserialize(&(subnumber.subset), &subset_data);
         ee_block_generate(&block, &statistics);
         status = ee_eval_rho(rho, &block, &statistics);
         EE_BREAK_IF_NOT_SUCCESS(status);

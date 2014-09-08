@@ -3,9 +3,7 @@
 
 #include "splitter.h"
 
-#include "common.h"
 #include "util.h"
-#include "source.h"
 
 static ee_int_t
 ee_source_split_iter_s(ee_source_list_t *list, const ee_char_t *window_start);

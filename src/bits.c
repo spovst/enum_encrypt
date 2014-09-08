@@ -1,7 +1,5 @@
 #include "bits.h"
 
-#include "common.h"
-
 ee_size_t
 ee_bit_get(ee_int_t value, ee_size_t bit_idx)
 {

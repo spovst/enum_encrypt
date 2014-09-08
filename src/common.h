@@ -23,8 +23,10 @@
 #define EE_INCORRECT_MODE 9
 #define EE_FINAL_BLOCK 10
 
-#define EE_TRUE 1
-#define EE_FALSE 0
+#define EE_TRUE ((ee_bool_t)1)
+#define EE_FALSE ((ee_bool_t)0)
+
+#define EE_MPZ_NULL { { 0, 0, NULL } }
 
 typedef long int ee_int_t;
 typedef size_t ee_size_t;

@@ -176,11 +176,9 @@ ee_args_parse(ee_args_t *args, int argc, char *argv[])
             ee_print_help_msg_s();
             status = EE_FAILURE;
             goto end;
-            break;
         default:
             status = EE_FAILURE;
             goto end;
-            break;
         }
     }
 

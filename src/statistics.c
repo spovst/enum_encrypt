@@ -1,9 +1,7 @@
 #include <stdlib.h>
-#include <string.h>
 
 #include "statistics.h"
 
-#include "common.h"
 #include "util.h"
 
 void

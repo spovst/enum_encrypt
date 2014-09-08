@@ -5,7 +5,6 @@
 
 typedef struct ee_statistics_s {
     ee_int_t stats[EE_ALPHABET_SIZE];
-    ee_size_t padding;
 } ee_statistics_t;
 
 #include "block.h"

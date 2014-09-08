@@ -31,7 +31,7 @@ ee_mpz_deserialize(mpz_t mpz, ee_size_t bits_number, ee_sdata_t *data);
 ee_int_t
 ee_subset_serialize(ee_sdata_t *data, ee_int_t subset, ee_size_t sigma);
 void
-ee_subset_deserialize(ee_int_t *subset, ee_size_t sigma, ee_sdata_t *data);
+ee_subset_deserialize(ee_int_t *subset, ee_sdata_t *data);
 
 ee_int_t
 ee_source_info_serialize(ee_sdata_t *data, ee_source_t *source, ee_size_t mu);

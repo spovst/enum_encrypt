@@ -1,13 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <gmp.h>
 
 #include "numeration.h"
-
-#include "common.h"
-#include "block.h"
-#include "statistics.h"
 
 typedef struct ee_z_item_s {
     mpz_t item;
@@ -120,7 +115,7 @@ void
 ee_subnumber_eval(ee_subnumber_t *subnumber, ee_number_t *number)
 {
     ee_size_t bit_idx;
-    mpz_t diff;
+    mpz_t diff = EE_MPZ_NULL;
 
     mpz_init(diff);
 
@@ -221,7 +216,7 @@ void
 ee_number_restore(ee_number_t *number, mpz_t delta, ee_subnumber_t *subnumber)
 {
     ee_size_t bit_idx;
-    mpz_t diff;
+    mpz_t diff = EE_MPZ_NULL;
 
     mpz_init(diff);
 
@@ -485,7 +480,7 @@ ee_eval_rtd0_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block,
 static void
 ee_eval_rtd_s(mpz_t *rho, mpz_t *theta, mpz_t *delta, ee_block_t *block)
 {
-    mpz_t tmp1, tmp2;
+    mpz_t tmp1 = EE_MPZ_NULL, tmp2 = EE_MPZ_NULL;
 
     if (NULL != theta && NULL != delta) {
         mpz_init(tmp1);
@@ -522,7 +517,7 @@ ee_eval_z_s(ee_z_item_t **z, ee_int_t *indexes, ee_size_t sym_idx,
         ee_block_t *block, ee_rt_item_t **rt, mpz_t **delta)
 {
     ee_size_t cur_z;
-    mpz_t tmp1, tmp2;
+    mpz_t tmp1 = EE_MPZ_NULL, tmp2 = EE_MPZ_NULL;
 
     mpz_init(tmp1);
     mpz_init(tmp2);
@@ -560,7 +555,7 @@ static void
 ee_block_restore_symbol_s(ee_block_t *block, ee_size_t sym_idx,
         ee_rt_item_t **rtd, mpz_t **delta, ee_int_t *thetas, ee_z_item_t **z)
 {
-    mpz_t tmp1, tmp2;
+    mpz_t tmp1 = EE_MPZ_NULL, tmp2 = EE_MPZ_NULL;
 
     mpz_init(tmp1);
     mpz_init(tmp2);

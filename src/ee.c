@@ -50,7 +50,7 @@ main(int argc, char *argv[])
 static ee_int_t
 ee_do_encrypt(ee_args_t *args, const char *pname)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
     ee_file_t input;
     ee_file_t pub_output, pri_output;
     ee_file_t *pub_output_ptr = NULL, *pri_output_ptr = NULL;
@@ -114,7 +114,7 @@ input_open_error:
 static ee_int_t
 ee_do_decrypt(ee_args_t *args, const char *pname)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
     ee_file_t pub_input, pri_input;
     ee_file_t *pub_input_ptr = NULL, *pri_input_ptr = NULL;
     ee_file_t output;
@@ -164,7 +164,7 @@ static ee_int_t
 ee_open_pub_pri(ee_file_t *pub_file, ee_file_t *pri_file, const ee_char_t *name,
         ee_int_t mode, const ee_char_t *pname)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
     ee_char_t *pub_name = NULL, *pri_name = NULL;
     ee_size_t pub_name_len, pri_name_len;
 
@@ -178,7 +178,7 @@ ee_open_pub_pri(ee_file_t *pub_file, ee_file_t *pri_file, const ee_char_t *name,
     }
 
     pri_name = calloc(pri_name_len + 1, sizeof(*pri_name));
-    if (NULL == pub_name) {
+    if (NULL == pri_name) {
         status = EE_ALLOC_FAILURE;
         goto pri_alloc_error;
     }
@@ -210,7 +210,7 @@ static ee_int_t
 ee_do_open(ee_file_t *file, const ee_char_t *name, ee_int_t mode,
         const ee_char_t *pname)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
 
     status = ee_file_open(file, name, mode);
     if (EE_SUCCESS != status) {

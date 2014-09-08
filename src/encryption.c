@@ -3,9 +3,6 @@
 
 #include "encryption.h"
 
-#include "common.h"
-#include "bits.h"
-#include "serializer.h"
 #include "util.h"
 
 static void

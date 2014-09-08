@@ -2,8 +2,6 @@
 
 #include "block.h"
 
-#include "common.h"
-#include "statistics.h"
 #include "util.h"
 
 ee_int_t

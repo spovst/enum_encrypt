@@ -1,14 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "io.h"
 
-#include "common.h"
-#include "bits.h"
-#include "block.h"
-#include "source.h"
 #include "util.h"
 
 #define EE_IO_BUFFER_SIZE (64 * 1024)
@@ -283,7 +278,7 @@ end:
 ee_int_t
 ee_file_read_sdata(ee_sdata_t *sdata, ee_size_t bits_number, ee_file_t *file)
 {
-    ee_int_t status = EE_SUCCESS;
+    ee_int_t status;
     ee_size_t bytes_number = EE_EVAL_BYTES_NUMBER(bits_number);
 
     sdata->bits_number = bits_number;
